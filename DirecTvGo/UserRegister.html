@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body style="padding-top:20px">
+    <div class="col-md-10" col-md-offset-1>
+        <div class="well">
+            <table class="table table-bordered">
+                <thead>
+                    <tr class="success">
+                        <td colspan="2">
+                            Nuevo usuario
+                            <a class="btn btn-success pull-right" href="LoginPage.html">Ingresar</a>
+                            <a class="btn btn-success pull-right" href="Data.html">Usuario Info</a>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Nombre</td>
+                        <td>
+                            <input type="text" id="txtName" placeholder="Nombre" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td>
+                            <input type="text" id="txtEmail" placeholder="Email" />
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>Password</td>
+                        <td>
+                            <input type="password" id="txtPassword" placeholder="Password" />
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>Confirm Password</td>
+                        <td>
+                            <input type="password" id="txtConfirmPassword" placeholder="Confirm Password" />
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>add phone user</td>
+                        <td>
+                            <input type="button" id="btnAddPhone" class="btn btn-success" value="+" />
+                        </td>
+                    </tr>
+                    <tr id="tablePhoneInfo">
+                        <td>Phone user</td>
+                        <td>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr class="success">
+                                        <td>Extention</td>
+                                        <td>Phone Number</td>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbBodyPhones">
+
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                   
+                    <tr class="success">
+                        <td colspan="2">
+                            <input id="btnRegister" class="btn btn-success" type="button" value="Register"/>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+            <div id="formPhoneNumber" class="modal fade" data-keyboard="false" data-backdrop="static">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">
+                                &times;
+                            </button>
+                            <h4>Add phone Number</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1">Extention</label>
+                                    <input type="text" class="form-control" id="txtExtentionPhone"  placeholder="Extention">
+                                    
+                                </div>
+                                <div class="form-group">
+                                    <label for="exampleInputPassword1">Phone Number</label>
+                                    <input type="text" class="form-control" id="txtPhoneNumber" placeholder="Phone Number">
+                                </div>
+                                
+                                <input type="button"  id="btnAddPhoneNumber" class="btn btn-primary" value="Agregar" />
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" tabindex="-1" id="SuccessModal" data-keyboard="false" data-backdrop="static">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">
+                                &times;
+                            </button>
+                            <h4>Success</h4>
+                        </div>
+                        <div class="modal-body">
+                            <h2>Registration SuccessFull</h2>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" data-dismiss="modal" class="btn btn-success">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="divError" class="alert alert-danger collapse">
+                <a id="linkClose" class="close" href="#">
+                    &times;
+                </a>
+                <div id="divErrorText"></div>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-3.4.1.min.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        var Phone = [];
+        $(document).ready(function () {
+
+            
+
+
+            $("#linkClose").click(function () {
+                $("#divError").hide("fade");
+            })
+
+            $("#btnAddPhone").click(function () {
+                $("#formPhoneNumber").modal("show");
+            })
+
+            $("#btnAddPhoneNumber").click(function () {
+                Phone.push({ id: generateUUID(), Extention: $("#txtExtentionPhone").val(), PhoneNumber: $("#txtPhoneNumber").val() })
+                $("#txtExtentionPhone").val("");
+                $("#txtPhoneNumber").val("");
+                $("#formPhoneNumber").modal("hide");
+
+                if (Phone.length > 0) {
+                    $("#tablePhoneInfo").css('visibility', 'visible');
+                }
+                $("#tbBodyPhones").empty();
+                Phone.forEach(function (item, index, array) {
+                    var row = $('<tr><td>' + item.Extention + '</td><td>'
+                        + item.PhoneNumber + '</td></tr>');
+                    $("#tbBodyPhones").append(row);
+                })
+                
+
+            })
+
+            $("#btnRegister").click(function () {
+                $.ajax({
+                    url: "/api/account/register",
+                    method: "POST",
+                    data: {
+                        Name: $("#txtName").val(),
+                        Email: $("#txtEmail").val(),
+                        Password: $("#txtPassword").val(),
+                        ConfirmPassword: $("#txtConfirmPassword").val(),
+                        Phone: Phone
+                    },
+                    success: function (reponse) {
+                        sessionStorage.setItem("accessToken", reponse.token)
+                        sessionStorage.setItem("userId", reponse.userId)
+                        
+                        $("#SuccessModal").modal("show");
+
+                        $("#txtName").val("");
+                        $("#txtEmail").val("");
+                        $("#txtPassword").val("");
+                        $("#txtConfirmPassword").val("");
+                        Phone = [];
+                        $("#tbBodyPhones").empty();
+
+                    },
+                    error: function (jqXHR) {
+                        $("#divErrorText").text(jqXHR.responseText);
+                        $("#divError").show('fade');
+                    }
+                })
+                
+            })
+        })
+
+        function generateUUID() { // Public Domain/MIT
+            var d = new Date().getTime();//Timestamp
+            var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16;//random number between 0 and 16
+                if (d > 0) {//Use timestamp until depleted
+                    r = (d + r) % 16 | 0;
+                    d = Math.floor(d / 16);
+                } else {//Use microseconds since page-load if supported
+                    r = (d2 + r) % 16 | 0;
+                    d2 = Math.floor(d2 / 16);
+                }
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+    </script>
+</body>
+</html>
